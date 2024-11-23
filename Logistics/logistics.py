@@ -1,48 +1,80 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import os
-import calendar
 
-root_path = os.path.dirname(os.path.abspath(__file__))
-csv_file_path = f"{root_path}/data/processed_dataset.csv"
-df = pd.read_csv(csv_file_path)
+from calculate import (
+    calculate_on_time_delivery,
+    calculate_total_deliveries,
+    calculate_total_on_time,
+    calculate_deliveries_by_month,
+    calculate_percenge_status
+)
+from utils import (
+    generate_plotly_card,
+    get_available_year,
+    get_available_months,
+    generate_df_filtered,
+    df_filteredby_year,
+)
+
 
 st.set_page_config(page_title="Logistics", page_icon="📦", layout="wide")
 
-# Get unique years and months for dropdown options
-available_years = df["Ano_Entrega"].unique()
-available_months = ["Todos"] + [calendar.month_name[i] for i in sorted(df["Mes_Entrega"].unique())]
-
 st.sidebar.header("Filters")
+
+years = get_available_year()
 selected_year = st.sidebar.selectbox(
-    "Select Year", options=sorted(available_years, reverse=True), index=0
+    "Select Year", options=sorted(years, reverse=True), index=0
 )
-selected_month = st.sidebar.selectbox("Select Month", options=available_months, index=0)
 
+months = get_available_months(selected_year)
+selected_month = st.sidebar.selectbox("Select Month", options=months, index=0)
+
+col1, col2, col3 = st.columns(3)
+col4, col5, col6 = st.columns(3)
+
+
+# -----------------------------------------------------------------------------------------------------#
 # Apply filters based on the selected month
-if selected_month == "Todos":
-    df_filtered = df[df["Ano_Entrega"] == selected_year]
-else:
-    month_number = list(calendar.month_name).index(selected_month)
-    df_filtered = df[
-        (df["Ano_Entrega"] == selected_year) & (df["Mes_Entrega"] == month_number)
-    ]
+df_filtered = generate_df_filtered(selected_year, selected_month)
 
-on_time_deliveries = (
-    df_filtered[df_filtered["Status_Entrega"] == "No Prazo"]
-    .groupby("Canal_Entrega")["Status_Entrega"]
-    .count()
-    .reset_index(name="Total")
-    .sort_values(by="Total",ascending=False)
-)
+# -----------------------------------------------------------------------------------------------------#
+# Calculate the total number of deliveries and the total number of deliveries on-time.
 
-fig = px.bar(
+# total_deliveries = calculate_total_deliveries(df_filtered)
+# on_time_deliveries_total = calculate_total_on_time(df_filtered)
+
+# # Generate and display the plotly cards with the calculated data.
+# generate_plotly_card(total_deliveries, col1, "chart1")
+# generate_plotly_card(on_time_deliveries_total, col2, "chart2")
+# -----------------------------------------------------------------------------------------------------#
+
+# -----------------------------------------------------------------------------------------------------#
+on_time_deliveries = calculate_on_time_delivery(df_filtered)
+fig_channel = px.bar(
     on_time_deliveries,
     x="Canal_Entrega",
     y="Total",
     title=f"Deliveries in {selected_month}/{selected_year}",
 )
-
 # Display the line chart in the Streamlit app
-st.plotly_chart(fig, use_container_width=True)
+col1.plotly_chart(fig_channel, use_container_width=True)
+# -----------------------------------------------------------------------------------------------------#
+
+# -----------------------------------------------------------------------------------------------------#
+df_filtered_year = df_filteredby_year(selected_year)
+deliveries_by_month = calculate_deliveries_by_month(df_filtered_year)
+fig_month = px.line(
+    deliveries_by_month,
+    x="Mes_Entrega",
+    y="Data_Entrega_Realizada",
+    title="Deliveries by Month",
+)
+col2.plotly_chart(fig_month, use_container_width=True)
+# -----------------------------------------------------------------------------------------------------#
+
+# -----------------------------------------------------------------------------------------------------#
+df_status = calculate_percenge_status(df_filtered)
+fig_status = px.pie(df_status, names="Status_Entrega", values="Percentage", title="Status of Deliveries")
+col3.plotly_chart(fig_status, use_container_width=True)
+# -----------------------------------------------------------------------------------------------------#

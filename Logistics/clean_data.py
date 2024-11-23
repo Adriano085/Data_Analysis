@@ -11,11 +11,10 @@ root_path = os.path.dirname(os.path.abspath(__file__))
 def date_convert(date_text):
     try:
         # Convert "Wednesday, 22 of November 2023" to "22/11/2023"
-        date = datetime.strptime(date_text, "%A, %d de %B de %Y").strftime("%d/%m/%Y")
-        return pd.to_datetime(date)
+        date = datetime.strptime(date_text, "%A, %d de %B de %Y")
+        return pd.to_datetime(date, format="%d/%m/%Y")
     except ValueError:
         return None
-
 
 df = pd.read_excel(f"{root_path}/data/dataset.xlsx")
 
@@ -30,7 +29,7 @@ df["Data_Entrega_Realizada"] = df["Data_Entrega_Realizada"].apply(date_convert)
 # Extract year and month from "Actual_Delivery_Date" for filtering
 df['Ano_Entrega'] = df['Data_Entrega_Realizada'].dt.year
 df['Mes_Entrega'] = df['Data_Entrega_Realizada'].dt.month
-df['Mes_Pedido'] = df['Data_Pedido'].dt.month
+
 
 csv_file_path = f"{root_path}/data/processed_dataset.csv"
 
