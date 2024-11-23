@@ -7,7 +7,8 @@ from calculate import (
     calculate_total_deliveries,
     calculate_total_on_time,
     calculate_deliveries_by_month,
-    calculate_percenge_status
+    calculate_percenge_status,
+    calculate_percentage_team,
 )
 from utils import (
     generate_plotly_card,
@@ -75,6 +76,21 @@ col2.plotly_chart(fig_month, use_container_width=True)
 
 # -----------------------------------------------------------------------------------------------------#
 df_status = calculate_percenge_status(df_filtered)
-fig_status = px.pie(df_status, names="Status_Entrega", values="Percentage", title="Status of Deliveries")
+fig_status = px.pie(
+    df_status, names="Status_Entrega", values="Percentage", title="Status of Deliveries"
+)
 col3.plotly_chart(fig_status, use_container_width=True)
 # -----------------------------------------------------------------------------------------------------#
+
+# -----------------------------------------------------------------------------------------------------#
+df_team = calculate_percentage_team(df_filtered)
+fig_team = px.bar(
+    df_team,
+    y="Equipe_Entrega",
+    x="Percentage",
+    title="Percentage of Deliveries by Team",
+    text="Percentage",
+)
+fig_team.update_traces(textposition="outside")
+fig_team.update_layout(width=900, height=400)
+col4.plotly_chart(fig_team, use_container_width=True)

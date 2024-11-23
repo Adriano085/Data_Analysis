@@ -42,3 +42,10 @@ def calculate_percenge_status(df):
 
     return df_status
 
+def calculate_percentage_team(df):
+    df_team_perc = df.groupby("Equipe_Entrega")["Data_Entrega_Realizada"].count().reset_index(name="Total")
+    df_team_perc["Percentage"] = (df_team_perc['Total'] / df_team_perc['Total'].sum()) * 100
+    df_team_perc = round(df_team_perc.sort_values(by="Total", ascending=False),2).sort_values(by="Percentage", ascending=True)
+
+    return df_team_perc
+
