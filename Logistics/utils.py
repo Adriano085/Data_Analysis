@@ -46,3 +46,17 @@ def generate_df_filtered(selected_year, selected_month):
 def df_filteredby_year(selected_year):
    return df[(df["Ano_Entrega"] == selected_year)]
 
+card_style = """
+    <div style="
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #f4f4f4;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        margin-bottom: 25px;
+        color: #333;
+        text-align: center; 
+    ">
+        <h4 style="margin: 0;">{title}</h4>
+        <p style="font-size: 24px; font-weight: bold; margin: 0;">{value}</p>
+    </div>
+"""

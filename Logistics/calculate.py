@@ -25,6 +25,13 @@ def calculate_total_on_time(df):
     )
     return on_time_deliveries_total
 
+def calculate_total_delay(df):
+    on_time_deliveries_total = len(
+        df[
+            (df["Status_Entrega"] == "Atrasado")
+        ]["Status_Entrega"]
+    )
+    return on_time_deliveries_total
 
 def calculate_deliveries_by_month(df):
     df_new = df.groupby("Mes_Entrega")["Data_Entrega_Realizada"].count().reset_index()
