@@ -3,11 +3,10 @@ import calendar
 
 def calculate_on_time_delivery(df_date):
     data = (
-        df_date[df_date["Status_Entrega"] == "No Prazo"]
-        .groupby("Canal_Entrega")["Status_Entrega"]
+        df_date.groupby(["Canal_Entrega", "Status_Entrega"])["Status_Entrega"]
         .count()
         .reset_index(name="Total")
-        .sort_values(by="Total", ascending=False)
+        .sort_values(by=["Total"], ascending=False)
     )
     return data
 
@@ -34,18 +33,49 @@ def calculate_deliveries_by_month(df):
     )
     return df_new
 
+
 def calculate_percenge_status(df):
-    df_status = df.groupby(["Status_Entrega"])["Status_Entrega"].count().reset_index(name="Total")
+    df_status = (
+        df.groupby(["Status_Entrega"])["Status_Entrega"]
+        .count()
+        .reset_index(name="Total")
+    )
 
     percentage_status = (df_status["Total"] / df_status["Total"].sum()) * 100
-    df_status["Percentage"] = round(percentage_status,2)
+    df_status["Percentage"] = round(percentage_status, 2)
 
     return df_status
 
+
 def calculate_percentage_team(df):
-    df_team_perc = df.groupby("Equipe_Entrega")["Data_Entrega_Realizada"].count().reset_index(name="Total")
-    df_team_perc["Percentage"] = (df_team_perc['Total'] / df_team_perc['Total'].sum()) * 100
-    df_team_perc = round(df_team_perc.sort_values(by="Total", ascending=False),2).sort_values(by="Percentage", ascending=True)
+    df_team_perc = (
+        df.groupby("Equipe_Entrega")["Data_Entrega_Realizada"]
+        .count()
+        .reset_index(name="Total")
+    )
+    df_team_perc["Percentage"] = (
+        df_team_perc["Total"] / df_team_perc["Total"].sum()
+    ) * 100
+    df_team_perc = round(
+        df_team_perc.sort_values(by="Total", ascending=False), 2
+    ).sort_values(by="Percentage", ascending=True)
 
     return df_team_perc
 
+
+def city_delivery_summary(df):
+    df_city = (
+        df.groupby(["ID_Cidade", "Status_Entrega"])["Status_Entrega"]
+        .count()
+        .unstack(fill_value=0)  # Transform rows into columns, filling NaN with 0
+    )
+    df_city["Total"] = df_city[["No Prazo", "Atrasado", "Antecipado"]].sum(axis=1)
+    df_city = df_city.sort_values(by="Total", ascending=False)
+    df_city = df_city.rename(
+        columns={
+            "Antecipado": "Total_Antecipado",
+            "No Prazo": "Total_No_Prazo",
+            "Atrasado": "Total_Atrasado",
+        }
+    )
+    return df_city

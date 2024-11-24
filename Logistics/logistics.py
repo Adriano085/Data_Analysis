@@ -9,6 +9,7 @@ from calculate import (
     calculate_deliveries_by_month,
     calculate_percenge_status,
     calculate_percentage_team,
+    city_delivery_summary
 )
 from utils import (
     generate_plotly_card,
@@ -31,8 +32,8 @@ selected_year = st.sidebar.selectbox(
 months = get_available_months(selected_year)
 selected_month = st.sidebar.selectbox("Select Month", options=months, index=0)
 
-col1, col2, col3 = st.columns(3)
-col4, col5, col6 = st.columns(3)
+col1, col2 = st.columns(2)
+col3, col4, col5 = st.columns(3)
 
 
 # -----------------------------------------------------------------------------------------------------#
@@ -56,30 +57,12 @@ fig_channel = px.bar(
     on_time_deliveries,
     x="Canal_Entrega",
     y="Total",
+    color="Status_Entrega",
     title=f"Deliveries in {selected_month}/{selected_year}",
+    barmode="group"
 )
 # Display the line chart in the Streamlit app
 col1.plotly_chart(fig_channel, use_container_width=True)
-# -----------------------------------------------------------------------------------------------------#
-
-# -----------------------------------------------------------------------------------------------------#
-df_filtered_year = df_filteredby_year(selected_year)
-deliveries_by_month = calculate_deliveries_by_month(df_filtered_year)
-fig_month = px.line(
-    deliveries_by_month,
-    x="Mes_Entrega",
-    y="Data_Entrega_Realizada",
-    title="Deliveries by Month",
-)
-col2.plotly_chart(fig_month, use_container_width=True)
-# -----------------------------------------------------------------------------------------------------#
-
-# -----------------------------------------------------------------------------------------------------#
-df_status = calculate_percenge_status(df_filtered)
-fig_status = px.pie(
-    df_status, names="Status_Entrega", values="Percentage", title="Status of Deliveries"
-)
-col3.plotly_chart(fig_status, use_container_width=True)
 # -----------------------------------------------------------------------------------------------------#
 
 # -----------------------------------------------------------------------------------------------------#
@@ -93,4 +76,29 @@ fig_team = px.bar(
 )
 fig_team.update_traces(textposition="outside")
 fig_team.update_layout(width=900, height=400)
-col4.plotly_chart(fig_team, use_container_width=True)
+col2.plotly_chart(fig_team, use_container_width=True)
+# -----------------------------------------------------------------------------------------------------#
+
+# -----------------------------------------------------------------------------------------------------#
+df_filtered_year = df_filteredby_year(selected_year)
+deliveries_by_month = calculate_deliveries_by_month(df_filtered_year)
+fig_month = px.line(
+    deliveries_by_month,
+    x="Mes_Entrega",
+    y="Data_Entrega_Realizada",
+    title="Deliveries by Month",
+)
+col3.plotly_chart(fig_month, use_container_width=True)
+# -----------------------------------------------------------------------------------------------------#
+
+# -----------------------------------------------------------------------------------------------------#
+df_status = calculate_percenge_status(df_filtered)
+fig_status = px.pie(
+    df_status, names="Status_Entrega", values="Percentage", title="Status of Deliveries"
+)
+col4.plotly_chart(fig_status, use_container_width=True)
+# -----------------------------------------------------------------------------------------------------#
+
+city_delivery_summary = city_delivery_summary(df_filtered)
+with col5:
+    st.dataframe(city_delivery_summary)
